@@ -27,20 +27,42 @@ int isEqual(int obj1, int obj2)
   return obj1 == obj2;
 }
 
+int ultrapassaLimiteHorizontal(int tam, int x, int y)
+{
+  int xlimit = TAMANHO;
+  int ylimit = TAMANHO - tam + 1;
+  for (int i = 0; i < tam; i++)
+  {
+    if (x > xlimit || y + i > ylimit)
+    {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+int ultrapassaLimiteVertical(int tam, int x, int y)
+{
+  int xlimit = TAMANHO - tam + 1;
+  int ylimit = TAMANHO;
+  for (int i = 0; i < tam; i++)
+  {
+    if (x + i > xlimit || y > ylimit)
+    {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 int isValidoHorizontal(char tabuleiro[TAMANHO][TAMANHO], int tam, int x, int y)
 {
-  int xlimit, ylimit;
-  xlimit = TAMANHO;
-  ylimit = TAMANHO - tam + 1;
   for (int i = 0; i < tam; i++)
   {
     if (!isEqual(tabuleiro[x][y + i], AGUA))
     {
       return 0;
-    } else if (x > xlimit || y + i > ylimit ) 
-    {
-      return 0;
-    } 
+    }
   }
 
   return 1;
@@ -48,18 +70,12 @@ int isValidoHorizontal(char tabuleiro[TAMANHO][TAMANHO], int tam, int x, int y)
 
 int isValidoVertical(char tabuleiro[TAMANHO][TAMANHO], int tam, int x, int y)
 {
-  int xlimit, ylimit;
-  xlimit = TAMANHO - tam + 1;
-  ylimit = TAMANHO;
   for (int i = 0; i < tam; i++)
   {
     if (!isEqual(tabuleiro[x + i][y], AGUA))
     {
       return 0;
-    } else if (x + i > xlimit || y > ylimit ) 
-    {
-      return 0;
-    } 
+    }
   }
 
   return 1;
@@ -107,22 +123,22 @@ void posicionarContraTorpedeiro(char tabuleiro[TAMANHO][TAMANHO])
     if (orient == 0)
     {
       xlimit = TAMANHO;
-      ylimit = TAMANHO - tamPORTAVIAO + 1;
+      ylimit = TAMANHO - tamCONTRATORPEDEIROS + 1;
       do
       {
         x = rand() % xlimit;
         y = rand() % ylimit;
-      } while (!isValidoHorizontal(tabuleiro, tamPORTAVIAO, x, y));
+      } while (!isValidoHorizontal(tabuleiro, tamCONTRATORPEDEIROS, x, y));
     }
     else if (orient == 1)
     {
-      xlimit = TAMANHO - tamPORTAVIAO + 1;
+      xlimit = TAMANHO - tamCONTRATORPEDEIROS + 1;
       ylimit = TAMANHO;
       do
       {
         x = rand() % xlimit;
         y = rand() % ylimit;
-      } while (!isValidoVertical(tabuleiro, tamPORTAVIAO, x, y));
+      } while (!isValidoVertical(tabuleiro, tamCONTRATORPEDEIROS, x, y));
     }
 
     for (int j = 0; j < tamCONTRATORPEDEIROS; j++)
@@ -146,22 +162,22 @@ void posicionarNavioTanque(char tabuleiro[TAMANHO][TAMANHO])
     if (orient == 0)
     {
       xlimit = TAMANHO;
-      ylimit = TAMANHO - tamPORTAVIAO + 1;
+      ylimit = TAMANHO - tamNAVIOTANQUE+ 1;
       do
       {
         x = rand() % xlimit;
         y = rand() % ylimit;
-      } while (!isValidoHorizontal(tabuleiro, tamPORTAVIAO, x, y));
+      } while (!isValidoHorizontal(tabuleiro, tamNAVIOTANQUE, x, y));
     }
     else if (orient == 1)
     {
-      xlimit = TAMANHO - tamPORTAVIAO + 1;
+      xlimit = TAMANHO - tamNAVIOTANQUE + 1;
       ylimit = TAMANHO;
       do
       {
         x = rand() % xlimit;
         y = rand() % ylimit;
-      } while (!isValidoVertical(tabuleiro, tamPORTAVIAO, x, y));
+      } while (!isValidoVertical(tabuleiro, tamNAVIOTANQUE, x, y));
     }
 
     for (int j = 0; j < tamNAVIOTANQUE; j++)
@@ -296,39 +312,44 @@ void posicionarNavioHumano(int tam_navio, char tabuleiro[TAMANHO][TAMANHO], int 
 
     if (escolha == 'h')
     {
-      if (isValidoHorizontal(tabuleiro, tam_navio, (linhaNavioJogador - 'A'), (colunaNavioJogador - 1)))
+      if (ultrapassaLimiteHorizontal(tam_navio, linhaNavioJogador - 'A', colunaNavioJogador - 1))
       {
-        for (int i = 0; i < tam_navio; i++)
+        if (isValidoHorizontal(tabuleiro, tam_navio, (linhaNavioJogador - 'A'), (colunaNavioJogador - 1)))
         {
-          tabuleiro[linhaNavioJogador - 'A'][(colunaNavioJogador - 1) + i] = NAVIO;
-          temp++;
-          if (temp == tam_navio)
-            quantidadenavio++;
+          for (int i = 0; i < tam_navio; i++)
+          {
+            tabuleiro[linhaNavioJogador - 'A'][(colunaNavioJogador - 1) + i] = NAVIO;
+            temp++;
+            if (temp == tam_navio)
+              quantidadenavio++;
+          }
         }
-      }
-      else
-      {
-        printf("Posicao Invalida.\n");
+        else
+        {
+          printf("Posicao Invalida.\n");
+        }
       }
       imprimirTabuleiro(tabuleiro);
     }
     else if (escolha == 'v')
     {
-      if (isValidoVertical(tabuleiro, tam_navio, (linhaNavioJogador - 'A'), (colunaNavioJogador - 1)))
-      {
-        for (int i = 0; i < tam_navio; i++)
+      if (ultrapassaLimiteVertical(tam_navio, linhaNavioJogador - 'A', colunaNavioJogador - 1)) {
+        if (isValidoVertical(tabuleiro, tam_navio, (linhaNavioJogador - 'A'), (colunaNavioJogador - 1)))
         {
-          tabuleiro[(linhaNavioJogador - 'A') + i][colunaNavioJogador - 1] = NAVIO;
-          temp++;
-          if (temp == tam_navio)
-          quantidadenavio++;
+          for (int i = 0; i < tam_navio; i++)
+          {
+            tabuleiro[(linhaNavioJogador - 'A') + i][colunaNavioJogador - 1] = NAVIO;
+            temp++;
+            if (temp == tam_navio)
+              quantidadenavio++;
+          }
+          imprimirTabuleiro(tabuleiro);
         }
-        imprimirTabuleiro(tabuleiro);
-      }
-      else
-      {
-        printf("Posicao Invalida.\n");
-      }
+        else
+        {
+          printf("Posicao Invalida.\n");
+        }
+    }
     }
   } while (quantidadenavio != quantidade);
 }
