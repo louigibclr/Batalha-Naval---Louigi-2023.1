@@ -54,14 +54,14 @@ void armazenarVizinhos(int linha, int coluna)
     posicoesVizinhas[++totalDePosicoesVizinhas] = coluna - 1;
   }
 
-  if((linha + 1) < (TAMANHO - 1))
+  if((linha + 1) <= (TAMANHO - 1))
   {
     posicoesVizinhas[++totalDePosicoesVizinhas] = linha + 1;
     posicoesVizinhas[++totalDePosicoesVizinhas] = coluna;
   }
 
 
-  if((coluna + 1) < (TAMANHO - 1))
+  if((coluna + 1) <= (TAMANHO - 1))
   {
     posicoesVizinhas[++totalDePosicoesVizinhas] = linha;
     posicoesVizinhas[++totalDePosicoesVizinhas] = coluna + 1;
@@ -252,7 +252,7 @@ int main()
 
     acertosJogador1 = ataqueHumano(tabuleiroComputador2, tabuleiroComputadorVisivel, linhaAtaque, colunaAtaque, acertosJogador1);
 
-    if (acertosJogador1 == 13)
+    if (acertosJogador1 == 25)
     {
       printf("O Jogador venceu! \n");
       imprimirTabuleiro(tabuleiroComputador2);
@@ -261,7 +261,7 @@ int main()
 
     acertosComputador2 = ataqueComputador(tabuleiroComputador1, acertosComputador2, 2);
 
-    if (acertosComputador2 == 13)
+    if (acertosComputador2 == 25)
     {
       printf("Computador 2 venceu! \n");
       imprimirTabuleiro(tabuleiroComputador1);
