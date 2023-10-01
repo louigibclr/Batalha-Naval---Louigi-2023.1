@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+int posicoesVizinhas[32];
+int totalDePosicoesVizinhas = -1;
+
 void imprimirTabuleiro(char tabuleiro[TAMANHO][TAMANHO])
 {
   printf("\t");
@@ -37,26 +40,63 @@ void inicializarTabuleiro(char tabuleiro[TAMANHO][TAMANHO]) {
   }
 }
 
+void armazenarVizinhos(int linha, int coluna)
+{
+  if((linha - 1) >= 0)
+  {
+    posicoesVizinhas[++totalDePosicoesVizinhas] = linha - 1;
+    posicoesVizinhas[++totalDePosicoesVizinhas] = coluna;
+  }
+
+  if((coluna - 1) >= 0)
+  {
+    posicoesVizinhas[++totalDePosicoesVizinhas] = linha;
+    posicoesVizinhas[++totalDePosicoesVizinhas] = coluna - 1;
+  }
+
+  if((linha + 1) < (TAMANHO - 1))
+  {
+    posicoesVizinhas[++totalDePosicoesVizinhas] = linha + 1;
+    posicoesVizinhas[++totalDePosicoesVizinhas] = coluna;
+  }
+
+
+  if((coluna + 1) < (TAMANHO - 1))
+  {
+    posicoesVizinhas[++totalDePosicoesVizinhas] = linha;
+    posicoesVizinhas[++totalDePosicoesVizinhas] = coluna + 1;
+  }
+}
+
 int ataqueComputador(char tabuleiro[TAMANHO][TAMANHO], int acertos, int cpu)
 {
   int linha, coluna;
 
-  do
+  do 
   {
-    linha = 'A' + rand() % TAMANHO;
-    coluna = rand() % TAMANHO;
-  } while (tabuleiro[linha - 'A'][coluna] == 'E' || tabuleiro[linha - 'A'][coluna] == 'A');
+    if(totalDePosicoesVizinhas < 0) {
+      linha  = rand() % TAMANHO;
+      coluna = rand() % TAMANHO;
+    }
+    else
+    {
+      coluna = posicoesVizinhas[totalDePosicoesVizinhas--];
+      linha = posicoesVizinhas[totalDePosicoesVizinhas--];
+    }
 
-  if (tabuleiro[linha - 'A'][coluna] == NAVIO)
+  } while (tabuleiro[linha][coluna] == 'E' || tabuleiro[linha][coluna] == 'A');
+
+  if (tabuleiro[linha][coluna] == NAVIO)
   {
-    printf("Computador %d acertou em %c %d!\n", cpu, linha, coluna + 1);
-    tabuleiro[linha - 'A'][coluna] = ACERTO;
+    printf("Computador %d acertou em %c %d!\n", cpu, linha + 'A', coluna + 1);
+    tabuleiro[linha][coluna] = ACERTO;
+    armazenarVizinhos(linha, coluna);
     acertos++;
   }
   else
   {
-    printf("Computador %d errou em %c %d!\n", cpu, linha, coluna + 1);
-    tabuleiro[linha - 'A'][coluna] = ERRO;
+    printf("Computador %d errou em %c %d!\n", cpu, linha + 'A', coluna + 1);
+    tabuleiro[linha][coluna] = ERRO;
   }
 
   return acertos;
@@ -68,12 +108,14 @@ int ataqueHumano(char tabuleiro[TAMANHO][TAMANHO], char tabuleiroVisivel[TAMANHO
   if (tabuleiro[linhaDeAtaque - 'A'][colunaDeAtaque - 1] == NAVIO)
   {
     printf("O Jogador ACERTOU em %c %d!\n", linhaDeAtaque, colunaDeAtaque);
+    tabuleiro[linhaDeAtaque - 'A'][colunaDeAtaque - 1] = ACERTO;
     tabuleiroVisivel[linhaDeAtaque - 'A'][colunaDeAtaque - 1] = ACERTO;
     acertos++;
   }
   else
   {
     printf("O Jogador ERROU em %c %d!\n", linhaDeAtaque, colunaDeAtaque);
+    tabuleiro[linhaDeAtaque - 'A'][colunaDeAtaque - 1] = ERRO;
     tabuleiroVisivel[linhaDeAtaque - 'A'][colunaDeAtaque - 1] = ERRO;
   }
 
