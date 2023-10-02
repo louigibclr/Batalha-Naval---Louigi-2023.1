@@ -32,6 +32,25 @@ void imprimirTabuleiro(char tabuleiro[TAMANHO][TAMANHO])
   }
 }
 
+void imprimirTabuleiroIA(char tabuleiro[TAMANHO][TAMANHO])
+{
+  printf("\t");
+  for (int i = 0; i < TAMANHO; i++)
+  {
+    printf("%d  ", i + 1);
+  }
+  printf("\n");
+
+  for (int i = 0; i < TAMANHO; i++)
+  {
+    printf("%c\t", 'A' + i);
+    for (int j = 0; j < TAMANHO; j++)
+    {
+      printf("%c  ", (tabuleiro[i][j] == ERRO || tabuleiro[i][j] == ACERTO) ? tabuleiro[i][j] : AGUA);
+    }
+    printf("\n");
+  }
+}
 
 void inicializarTabuleiro(char tabuleiro[TAMANHO][TAMANHO]) {
   for (int i = 0; i < TAMANHO; i++) {
@@ -69,7 +88,7 @@ void armazenarVizinhos(int linha, int coluna)
   }
 }
 
-int ataqueComputador(char tabuleiro[TAMANHO][TAMANHO], int acertos)
+int ataqueComputador(char tabuleiroHumano[TAMANHO][TAMANHO], int acertos)
 {
   int linha, coluna;
 
@@ -85,51 +104,60 @@ int ataqueComputador(char tabuleiro[TAMANHO][TAMANHO], int acertos)
       linha = posicoesVizinhas[totalDePosicoesVizinhas--];
     }
 
-  } while (tabuleiro[linha][coluna] == 'E' || tabuleiro[linha][coluna] == 'A');
+  } while (tabuleiroHumano[linha][coluna] == 'E' || tabuleiroHumano[linha][coluna] == 'A');
 
-  if (tabuleiro[linha][coluna] == NAVIO)
+  if (tabuleiroHumano[linha][coluna] == NAVIO)
   {
-    printf("\n\tA CPU acertou em %c %d!\n", linha + 'A', coluna + 1);
-    tabuleiro[linha][coluna] = ACERTO;
+    printf("\n\tComputador acertou em %c %d!\n", linha + 'A', coluna + 1);
+    tabuleiroHumano[linha][coluna] = ACERTO;
     armazenarVizinhos(linha, coluna);
     acertos++;
   }
   else
   {
-    printf("\n\tA CPU errou em %c %d!\n", linha + 'A', coluna + 1);
-    tabuleiro[linha][coluna] = ERRO;
+    printf("\n\tComputador errou em %c %d!\n", linha + 'A', coluna + 1);
+    tabuleiroHumano[linha][coluna] = ERRO;
   }
 
   return acertos;
 }
 
-int ataqueHumano(char tabuleiro[TAMANHO][TAMANHO], char tabuleiroVisivel[TAMANHO][TAMANHO], int acertos)
+int ataqueHumano(char tabuleiroCPU[TAMANHO][TAMANHO], int acertos)
 {
-  char linhaAtaque;
-  int colunaAtaque;
+  char linhaDeAtaque;
+  int colunaDeAtaque;
+
   printf("\n\t\x1b[34;40mEscolha onde deseja atacar o tabuleiro da CPU: (Coordenada X, Coordenada Y):\x1b[0m ");
-  scanf("%c %d", &linhaAtaque, &colunaAtaque);
-  linhaAtaque = toupper(linhaAtaque);
-  
-  if (colunaAtaque <= TAMANHO && linhaAtaque - 'A' < TAMANHO) {
+  scanf("%c %d", &linhaDeAtaque, &colunaDeAtaque);
+  while(getchar() != '\n');
+
+  linhaDeAtaque = toupper(linhaDeAtaque);
+
+  if (colunaDeAtaque <= TAMANHO && linhaDeAtaque - 'A' < TAMANHO && colunaDeAtaque > 0 && (linhaDeAtaque - 'A') >= 0) {
+    int castx = linhaDeAtaque - 'A';
+    int casty = colunaDeAtaque - 1;
     
-    int castx = linhaAtaque - 'A';
-    int casty = colunaAtaque - 1;
-    if (tabuleiro[castx][casty] == NAVIO) {
-      printf("\n\tO Jogador ACERTOU em %c %d!\n", linhaAtaque, colunaAtaque);
-      tabuleiro[castx][casty] = ACERTO;
-      tabuleiroVisivel[castx][casty] = ACERTO;
+    if (tabuleiroCPU[castx][casty] == NAVIO)
+    {
+      printf("\n\tO Jogador ACERTOU em %c %d!\n", linhaDeAtaque, colunaDeAtaque);
+      tabuleiroCPU[castx][casty] = ACERTO;
       acertos++;
-  } else if (tabuleiro[castx][casty] == AGUA) {
-    printf("\n\tO Jogador ERROU em %c %d!\n", linhaAtaque, colunaAtaque);
-    tabuleiro[castx][casty] = ERRO;
-    tabuleiroVisivel[castx][casty] = ERRO;
-  } else if(tabuleiro[castx][casty] == ACERTO || tabuleiro[castx][casty] == ERRO) {
-    printf("\n\t\x1b[30;41mCoordenada ja posicionada. Escolha outra.\x1b[0m\n");
+    }
+    else if(tabuleiroCPU[castx][casty] == AGUA)
+    {
+      printf("\n\tO Jogador ERROU em %c %d!\n", linhaDeAtaque, colunaDeAtaque);
+      tabuleiroCPU[castx][casty] = ERRO;
+    } 
+    else {
+      printf("\n\t\x1b[30;41mCoordenada ja posicionada. Escolha outra.\x1b[0m\n");
+      ataqueHumano(tabuleiroCPU, acertos);
+    }
   }
-  } else {
+  else {
     printf("\n\t\x1b[30;41mEssa posicao ultrapassa os limites do tabuleiro.\x1b[0m\n");
+    ataqueHumano(tabuleiroCPU, acertos);
   }
+
   return acertos;
 }
 
@@ -142,61 +170,62 @@ void posicionarNavioHumano(int tam_navio, char tabuleiro[][TAMANHO], int quantid
     char orient;          
     int colunaNavioJogador; //numero
 
-    printf("\n- - - Escolha a posicao dos NAVIOS - - -\n");
-    printf("\nEscolha entre HORIZONTAL ou VERTICAL: (h / v) \n");
+    printf("\n-----Escolha a posicao dos NAVIOS-----\n");
+    printf("\nEscolha entre HORIZONTAL ou VERTICAL: (h / v)\n");
     scanf("%c", &orient);
     while (getchar() != '\n');
 
     orient = tolower(orient);
-  
-    if (orient == 'h') {
-      printf("Digite a POSICAO do navio: (coordenada X (letra) e Y (numero) )\n");
+
+    if(orient != 'v' && orient != 'h') {
+      printf("\n\t\x1b[30;41mEscolha uma orientacao valida.\x1b[0m\n");
+    }
+    else {
+      printf("Digite a POSICAO do navio: (coordenada X e Y)\n");
       scanf("%c %d", &linhaNavioJogador, &colunaNavioJogador);
       while (getchar() != '\n');
       linhaNavioJogador = toupper(linhaNavioJogador);
-      
+
       int castx = linhaNavioJogador - 'A';
       int casty = colunaNavioJogador - 1;
-      if (!ultrapassaLimiteHorizontal(tam_navio, castx, casty) && colunaNavioJogador <= TAMANHO) {
-        if (isValidoHorizontal(tabuleiro, tam_navio, castx, casty)) {
-          for (int i = 0; i < tam_navio; i++)
-          {
-            tabuleiro[castx][casty + i] = NAVIO;
+      if (orient == 'h') {
+        if (!ultrapassaLimiteHorizontal(tam_navio, castx, casty)) { //maybe the function
+          if (isValidoHorizontal(tabuleiro, tam_navio, castx, casty)) {
+            for (int i = 0; i < tam_navio; i++)
+            {
+              tabuleiro[castx][casty+i] = NAVIO;
+            }
+            quantidadenavio++;
           }
-          quantidadenavio++;
+          else {
+            printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
+          }
+        } else {
+          printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
+        }
+      }
+      else if (orient == 'v')
+      {
+        if (!ultrapassaLimiteVertical(tam_navio, castx, casty)) {
+          if (isValidoVertical(tabuleiro, tam_navio, castx, casty))
+          {
+            for (int i = 0; i < tam_navio; i++)
+            {
+              tabuleiro[castx + i][casty] = NAVIO;   
+            }
+            quantidadenavio++;  
+          }
+          else
+          {
+            printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
+          }
         }
         else {
           printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
         }
-      } else {
-        printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
       }
-    } else if (orient == 'v') {
-      printf("Digite a POSICAO do navio: (coordenada X (letra) e Y (numero) )\n");
-      scanf("%c %d", &linhaNavioJogador, &colunaNavioJogador);
-      while (getchar() != '\n');
-      linhaNavioJogador = toupper(linhaNavioJogador);
-      
-      int castx = linhaNavioJogador - 'A';
-      int casty = colunaNavioJogador - 1;
-      if (!ultrapassaLimiteVertical(tam_navio, castx, casty) && colunaNavioJogador <= TAMANHO) {
-        if (isValidoVertical(tabuleiro, tam_navio, castx, casty)) {
-          for (int i = 0; i < tam_navio; i++)
-          {
-            tabuleiro[castx + i][casty] = NAVIO;
-          }
-          quantidadenavio++;  
-        } else {
-          printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
-        }
-      } else {
-        printf("\n\t\x1b[30;41mPosicao Invalida.\x1b[0m\n");
-      }
-    } else {
-      printf("\n\t\x1b[30;41mEscolha uma orientacao valida.\x1b[0m\n");
+      imprimirTabuleiro(tabuleiro);
     }
-    printf("\n");
-    imprimirTabuleiro(tabuleiro);
   } while (quantidadenavio < quantidade);
 }
 
@@ -207,17 +236,15 @@ void clearscr(void) {
 
 int main()
 {
-  char tabuleiroComputador1[TAMANHO][TAMANHO];
-  char tabuleiroComputador2[TAMANHO][TAMANHO];
-  char tabuleiroComputadorVisivel[TAMANHO][TAMANHO];
+  char tabuleiroHumano[TAMANHO][TAMANHO];
+  char tabuleiroCPU[TAMANHO][TAMANHO];
 
-  int acertosJogador1 = 0, acertosComputador2 = 0;
-  
+  int acertosJogador1 = 0, acertosComputador2 = 0, colunaAtaque;
+  char linhaAtaque;
   srand(time(NULL));
 
-  inicializarTabuleiro(tabuleiroComputador1);
-  inicializarTabuleiro(tabuleiroComputador2);
-  inicializarTabuleiro(tabuleiroComputadorVisivel);
+  inicializarTabuleiro(tabuleiroHumano);
+  inicializarTabuleiro(tabuleiroCPU);
 
   //clearscr();
 
@@ -230,65 +257,56 @@ int main()
   printf("\n| 2 Contra-Torpedeiros [N][N][N]                   |\n");
   printf("\n| 3 Submarinos [N][N]                              |\n");
   printf("\n----------------------------------------------------\n");
-
-  iaPosicionaNavio(tabuleiroComputador2, tamPORTAVIAO, quantPORTAVIAO);
-  iaPosicionaNavio(tabuleiroComputador2, tamNAVIOTANQUE, quantNAVIOTANQUE);
-  iaPosicionaNavio(tabuleiroComputador2, tamCONTRATORPEDEIROS, quantCONTRATORPEDEIROS);
-  iaPosicionaNavio(tabuleiroComputador2, tamSUBMARINO, quantSUBMARINO);
+  
+  iaPosicionaNavio(tabuleiroCPU, tamPORTAVIAO, quantPORTAVIAO);
+  iaPosicionaNavio(tabuleiroCPU, tamNAVIOTANQUE, quantNAVIOTANQUE);
+  iaPosicionaNavio(tabuleiroCPU, tamCONTRATORPEDEIROS, quantCONTRATORPEDEIROS);
+  iaPosicionaNavio(tabuleiroCPU, tamSUBMARINO, quantSUBMARINO);
  
   printf("\nTabuleiro do Jogador:\n");
-  imprimirTabuleiro(tabuleiroComputador1);
+  imprimirTabuleiro(tabuleiroHumano);
 
-  printf("\n- - - Posicione os PORTA AVIOES [N][N][N][N][N] - - -\n");
-  posicionarNavioHumano(tamPORTAVIAO, tabuleiroComputador1, quantPORTAVIAO);
+  printf("\n-----Posicione os PORTA AVIOES [N][N][N][N][N] -----\n");
+  posicionarNavioHumano(tamPORTAVIAO, tabuleiroHumano, quantPORTAVIAO);
 
-  printf("\n- - - Posicione os NAVIOS TANQUE [N][N][N][N] - - -\n");
-  posicionarNavioHumano(tamNAVIOTANQUE, tabuleiroComputador1, quantNAVIOTANQUE);
+  printf("\n-----Posicione os NAVIOS TANQUE [N][N][N][N] -----\n");
+  posicionarNavioHumano(tamNAVIOTANQUE, tabuleiroHumano, quantNAVIOTANQUE);
 
-  printf("\n- - - Posicione os CONTRA-TORPEDEIROS [N][N][N] - - -\n");
-  posicionarNavioHumano(tamCONTRATORPEDEIROS, tabuleiroComputador1, quantCONTRATORPEDEIROS);
+  printf("\n-----Posicione os CONTRA-TORPEDEIROS [N][N][N] -----\n");
+  posicionarNavioHumano(tamCONTRATORPEDEIROS, tabuleiroHumano, quantCONTRATORPEDEIROS);
 
-  printf("\n- - - Posicione os SUBMARINOS [N][N] - - -\n");
-  posicionarNavioHumano(tamSUBMARINO, tabuleiroComputador1, quantSUBMARINO);
+  printf("\n-----Posicione os SUBMARINOS [N][N] -----\n");
+  posicionarNavioHumano(tamSUBMARINO, tabuleiroHumano, quantSUBMARINO);
 
   printf("\n\t\x1b[30;47mNavios posicionados. QUE O JOGO COMECE!\x1b[0m\n");
-
-  clearscr();
-  
-  while (1)
+  do
   {
-    
-    printf("\n\tTabuleiro do Jogador:\n");
-    imprimirTabuleiro(tabuleiroComputador1);
+    clearscr();
+    printf("Tabuleiro do Jogador:\n");
+    imprimirTabuleiro(tabuleiroHumano);
     printf("\n");
-    printf("\tTabuleiro da CPU:\n");
-    imprimirTabuleiro(tabuleiroComputadorVisivel);
-    
-    
-    acertosJogador1 = ataqueHumano(tabuleiroComputador2, tabuleiroComputadorVisivel, acertosJogador1);
+    printf("Tabuleiro do Computador:\n");
+    imprimirTabuleiro(tabuleiroCPU);
 
-    if (acertosJogador1 == 25)
-    {
-      printf("\n\t\x1b[30;42m - - - - - - - - - - \n\x1b[0m\n");
-      printf("\t\x1b[30;42m| O Jogador venceu! |\x1b[0m\n\n");
-      printf("\t\x1b[30;42m - - - - - - - - - - \x1b[0m\n");
-      imprimirTabuleiro(tabuleiroComputador2);
-      break;
-    }
+    acertosJogador1 = ataqueHumano(tabuleiroCPU, acertosJogador1);
+    acertosComputador2 = ataqueComputador(tabuleiroHumano, acertosComputador2);
 
-    acertosComputador2 = ataqueComputador(tabuleiroComputador1, acertosComputador2);
-
-    if (acertosComputador2 == 25)
-    {
-      printf("\n\t\x1b[30;42m - - - - - - - - \x1b[0m\n");
-      printf("\t\x1b[30;42m| A CPU venceu! |\x1b[0m\n");
-      printf("\t\x1b[30;42m - - - - - - - - \x1b[0m\n");
-      imprimirTabuleiro(tabuleiroComputador2);
-      break;
-    }
-
-
+    printf("\nPressione enter para continuar ...");
     getchar();
   }
+  while(acertosJogador1 < 25 && acertosComputador2 < 25);
+
+  if (acertosJogador1 == 25)
+  {
+    printf("O Jogador venceu! \n");
+    imprimirTabuleiro(tabuleiroCPU);
+  }
+
+  if (acertosComputador2 == 25)
+  {
+    printf("Computador 2 venceu! \n");
+    imprimirTabuleiro(tabuleiroHumano);
+  }
+
   return 0;
 }
