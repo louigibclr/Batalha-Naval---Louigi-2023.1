@@ -286,7 +286,7 @@ int main()
     imprimirTabuleiro(tabuleiroHumano);
     printf("\n");
     printf("Tabuleiro do Computador:\n");
-    imprimirTabuleiro(tabuleiroCPU);
+    imprimirTabuleiroIA(tabuleiroCPU);
 
     acertosJogador1 = ataqueHumano(tabuleiroCPU, acertosJogador1);
     acertosComputador2 = ataqueComputador(tabuleiroHumano, acertosComputador2);
@@ -299,12 +299,17 @@ int main()
   if (acertosJogador1 == 25)
   {
     printf("O Jogador venceu! \n");
+    printf("\n\t\x1b[30;42m - - - - - - - - - - \n\x1b[0m\n");
+    printf("\t\x1b[30;42m| O Jogador venceu! |\x1b[0m\n\n");
+    printf("\t\x1b[30;42m - - - - - - - - - - \x1b[0m\n");
     imprimirTabuleiro(tabuleiroCPU);
   }
 
   if (acertosComputador2 == 25)
   {
-    printf("Computador 2 venceu! \n");
+    printf("\n\t\x1b[30;42m - - - - - - - - \x1b[0m\n");
+    printf("\t\x1b[30;42m| A CPU venceu! |\x1b[0m\n");
+    printf("\t\x1b[30;42m - - - - - - - - \x1b[0m\n");
     imprimirTabuleiro(tabuleiroHumano);
   }
 
